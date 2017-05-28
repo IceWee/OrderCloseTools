@@ -30,11 +30,10 @@ public class TaskThread implements Runnable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskThread.class);
 
-    private static final int MAX_MILLIS = 24 * 60 * 60 * 1000;
-
     private final AppUI app; // 用于回调
     private final String orderPath; // 订单文件路径
     private final String sqlPath; // SQL文件生成路径
+    private List<String> allNewOrderNos = new ArrayList<>(); // 全部新订单号（本次处理）
 
     private static final String TABLE_NAME = "CRM_WS_ORDER";
     private static final String COLUMN_ORDER_NO = "ORDER_NO"; // VARCHAR,W20170526100254872730462
@@ -44,6 +43,8 @@ public class TaskThread implements Runnable {
     private static final String COLUMN_ORDER_DATE = "ORDER_DATE"; // DATETIME
     private static final String COLUMN_ARRIVAL_DATE = "ARRIVAL_DATE"; // DATETIME
     private static final String COLUMN_END_DATE = "END_DATE"; // DATETIME
+    private static final String COLUMN_CREATED = "CREATED"; // DATETIME
+    private static final String COLUMN_UPDATED = "UPDATED"; // DATETIME
 
     public TaskThread(AppUI app, String orderPath, String sqlPath) {
         this.app = app;
@@ -69,16 +70,58 @@ public class TaskThread implements Runnable {
             for (File orderFile : orderFiles) {
                 LOGGER.info("正在处理文件：{}", orderFile.getAbsolutePath());
                 orderNos = getOrderNos(orderFile);
-                sqls.addAll(getOrderCloseSQLs(orderNos, months));
+                sqls.addAll(getOrderCloseSQLs(orderNos, months, config));
             }
-            // 3.写SQL文件
+            // 3.生成查重SQL
+            List<String> searchDupSQLs = getSearchDuplicateOrderNoSQLs();
+            sqls.addAll(searchDupSQLs);
+            sqls.add("--本次一共处理订单数：" + allNewOrderNos.size());
+            // 4.写SQL文件
             String sqlFilePath = getSQLFilePath();
             writeSQLFile(sqls, sqlFilePath);
             this.app.completed();
-        } catch (Exception ex) {
+        } catch (IOException | ParseException ex) {
             LOGGER.error("运行出错\n{}", ExceptionUtils.createExceptionString(ex));
             this.app.buttonsEnabled();
         }
+    }
+
+    /**
+     * 获取查询本次产生的重复订单号查询语句
+     *
+     * @return
+     */
+    private List<String> getSearchDuplicateOrderNoSQLs() {
+        List<String> sqls = new ArrayList<>();
+        final int MAX_SIZE = 500;
+        int total = allNewOrderNos.size();
+        int times = total / MAX_SIZE;
+        if (total % MAX_SIZE != 0) {
+            times++;
+        }
+        int fromIndex = 0;
+        int toIndex = 0;
+        List<String> subOrderNos;
+        for (int i = 0; i < times; i++) {
+            toIndex = fromIndex + MAX_SIZE;
+            if (toIndex >= total) {
+                toIndex = total;
+            }
+            subOrderNos = allNewOrderNos.subList(fromIndex, toIndex);
+            sqls.add(getSearchDuplicateOrderNoSQL(subOrderNos));
+            fromIndex = fromIndex + MAX_SIZE;
+        }
+        return sqls;
+    }
+
+    private String getSearchDuplicateOrderNoSQL(List<String> orderNos) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("SELECT * FROM ").append(TABLE_NAME).append(" WHERE ").append(COLUMN_ORDER_NO).append(" in (");
+        String sql = StringUtils.join(orderNos.toArray(), "','");
+        sql = "'" + sql + "'";
+        builder.append(sql);
+        builder.append(");\n");
+        return builder.toString();
     }
 
     /**
@@ -106,7 +149,9 @@ public class TaskThread implements Runnable {
         BufferedReader reader = new BufferedReader(new FileReader(orderFile));
         String line = reader.readLine();
         while (line != null) {
-            orderNos.add(StringUtils.trim(line));
+            if (StringUtils.isNotBlank(line)) {
+                orderNos.add(StringUtils.trim(line));
+            }
             line = reader.readLine();
         }
         return orderNos;
@@ -117,20 +162,21 @@ public class TaskThread implements Runnable {
      *
      * @param orderNos
      * @param months
+     * @param config
      * @return
      */
-    private List<String> getOrderCloseSQLs(List<String> orderNos, List<String> months) throws ParseException {
+    private List<String> getOrderCloseSQLs(List<String> orderNos, List<String> months, Config config) throws ParseException {
         List<String> sqls = new ArrayList<>();
         int monthIndex = 0;
         int maxMonthIndex = months.size() - 1;
         String yyyyMM;
         for (String orderNo : orderNos) {
-            if (monthIndex >= maxMonthIndex) {
+            if (monthIndex > maxMonthIndex) {
                 monthIndex = 0;
             }
             yyyyMM = months.get(monthIndex);
-            long date = DateUtils.randomLong(yyyyMM);
-            sqls.add(getOrderCloseSQL(orderNo, date));
+            long date = DateUtils.randomLong(yyyyMM, config.getMinHour(), config.getMaxHour());
+            sqls.add(getOrderCloseSQL(orderNo, date, config));
             monthIndex++;
         }
         return sqls;
@@ -141,9 +187,10 @@ public class TaskThread implements Runnable {
      *
      * @param orderNo
      * @param date
+     * @param config
      * @return
      */
-    private String getOrderCloseSQL(String orderNo, long date) {
+    private String getOrderCloseSQL(String orderNo, long date, Config config) {
         StringBuilder builder = new StringBuilder();
         builder.append("UPDATE ").append(TABLE_NAME).append(" SET ");
         builder.append(COLUMN_ORDER_STATUS).append(" = ").append("'7', "); // 状态：闭环
@@ -151,16 +198,20 @@ public class TaskThread implements Runnable {
         builder.append(COLUMN_ORDER_SOURCE).append(" = ").append("'sz0528', "); // 来源
         String orderDate = DateUtils.formatDateTime(date);
         builder.append(COLUMN_ORDER_DATE).append(" = ").append("'").append(orderDate).append("', "); // 订单时间
-        long arrivalLong = DateUtils.nextRandomLong(date, MAX_MILLIS);
+        long arrivalLong = DateUtils.nextRandomLong(date, config.getMaxSecondInterval() * 1000);
         String arrivalDate = DateUtils.formatDateTime(arrivalLong);
         builder.append(COLUMN_ARRIVAL_DATE).append(" = ").append("'").append(arrivalDate).append("', "); // 到货时间
-        long endLong = DateUtils.nextRandomLong(arrivalLong, MAX_MILLIS);
+        long endLong = DateUtils.nextRandomLong(arrivalLong, config.getMaxSecondInterval() * 1000);
         String endDate = DateUtils.formatDateTime(endLong);
-        builder.append(COLUMN_END_DATE).append(" = ").append("'").append(endDate).append("' "); // 闭环时间
+        builder.append(COLUMN_END_DATE).append(" = ").append("'").append(endDate).append("', "); // 闭环时间
+        builder.append(COLUMN_CREATED).append(" = ").append("'").append(orderDate).append("', "); // 创建时间
+        builder.append(COLUMN_UPDATED).append(" = ").append("'").append(endDate).append("' "); // 修改时间
         builder.append("WHERE ").append(COLUMN_ORDER_NO).append(" = ").append("'").append(orderNo).append("';");
         // 修改订单号
+        String newOrderNo = createNewOrderNo(orderNo, date);
+        allNewOrderNos.add(newOrderNo);
         builder.append("\nUPDATE ").append(TABLE_NAME).append(" SET ");
-        builder.append(COLUMN_ORDER_NO).append(" = ").append("'").append(createNewOrderNo(orderNo, date)).append("' ");
+        builder.append(COLUMN_ORDER_NO).append(" = ").append("'").append(newOrderNo).append("' ");
         builder.append("WHERE ").append(COLUMN_ORDER_NO).append(" = ").append("'").append(orderNo).append("';");
         return builder.toString();
     }

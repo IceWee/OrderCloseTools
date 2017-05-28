@@ -86,6 +86,26 @@ public class DateUtils {
         return randomLong(begin, end);
     }
 
+    /**
+     * 获取随机时间
+     *
+     * @param yyyyMM 2017-04
+     * @param minHour 最小小时
+     * @param maxHour 最大小时
+     * @return
+     * @throws ParseException
+     */
+    public static long randomLong(String yyyyMM, int minHour, int maxHour) throws ParseException {
+        long randomLong = randomLong(yyyyMM);
+        Date date = new Date(randomLong);
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.set(Calendar.HOUR_OF_DAY, randomInteger(minHour, maxHour));
+        calendar.set(Calendar.MINUTE, randomInteger(0, 59));
+        calendar.set(Calendar.SECOND, randomInteger(0, 59));
+        return calendar.getTimeInMillis();
+    }
+
     public static long randomLong(long begin, long end) {
         long ranLong = begin + (long) (Math.random() * (end - begin));
         //如果返回的是开始时间和结束时间，则递归调用本函数查找随机值
@@ -93,6 +113,10 @@ public class DateUtils {
             return randomLong(begin, end);
         }
         return ranLong;
+    }
+
+    public static int randomInteger(int begin, int end) {
+        return begin + (int) (Math.random() * (end - begin));
     }
 
     /**
@@ -108,9 +132,13 @@ public class DateUtils {
 
     // W2017 05 26 10 02 54 872 730462
     public static void main(String[] args) {
-        String orderNo = "W20170526100254872730462";
-        String newOrderNo = StringUtils.substring(orderNo, 18);
-        System.err.println(newOrderNo);
+        List<String> list = new ArrayList<>();
+        list.add("a");
+        list.add("b");
+        list.add("c");
+        String str = StringUtils.join(list.toArray(), "','");
+        str = "'" + str + "'";
+        System.err.println(str);
     }
 
 }

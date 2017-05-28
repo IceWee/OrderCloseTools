@@ -48,6 +48,21 @@ public class Constants {
      */
     public static final String CONFIG_END_MONTH = "month.end";
 
+    /**
+     * 配置文件-最小小时
+     */
+    public static final String CONFIG_MIN_HOUR = "hour.min";
+
+    /**
+     * 配置文件-最大小时
+     */
+    public static final String CONFIG_MAX_HOUR = "hour.max";
+
+    /**
+     * 配置文件-最大时间差
+     */
+    public static final String CONFIG_MAX_SECOND_INTERVAL = "second.interval.max";
+
     private Constants() {
         super();
     }

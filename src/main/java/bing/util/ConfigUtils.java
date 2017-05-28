@@ -44,6 +44,12 @@ public class ConfigUtils {
                     config.setStartMonth(value);
                 } else if (StringUtils.startsWith(line, Constants.CONFIG_END_MONTH)) {
                     config.setEndMonth(value);
+                } else if (StringUtils.startsWith(line, Constants.CONFIG_MIN_HOUR)) {
+                    config.setMinHour(Integer.parseInt(value));
+                } else if (StringUtils.startsWith(line, Constants.CONFIG_MAX_HOUR)) {
+                    config.setMaxHour(Integer.parseInt(value));
+                } else if (StringUtils.startsWith(line, Constants.CONFIG_MAX_SECOND_INTERVAL)) {
+                    config.setMaxSecondInterval(Integer.parseInt(value));
                 }
             }
         } catch (IOException e) {
