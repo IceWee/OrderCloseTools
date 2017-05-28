@@ -259,7 +259,7 @@ public class TaskThread implements Runnable {
                 writer.write(sql);
                 writer.newLine();
             }
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             LOGGER.error("生成SQL文件时出现了异常\n{}", ExceptionUtils.createExceptionString(ex));
             throw new RuntimeException(ex);
         } finally {
