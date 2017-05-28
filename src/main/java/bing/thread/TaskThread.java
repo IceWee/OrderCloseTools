@@ -1,6 +1,7 @@
 package bing.thread;
 
 import bing.AppUI;
+import bing.Constants;
 import bing.bean.Config;
 import bing.util.ConfigUtils;
 import bing.util.DateUtils;
@@ -253,7 +254,7 @@ public class TaskThread implements Runnable {
         BufferedWriter writer = null;
         try {
             fos = new FileOutputStream(file);
-            writer = new BufferedWriter(new OutputStreamWriter(fos));
+            writer = new BufferedWriter(new OutputStreamWriter(fos, Constants.ENCODING_UTF8));
             for (String sql : sqls) {
                 writer.write(sql);
                 writer.newLine();
