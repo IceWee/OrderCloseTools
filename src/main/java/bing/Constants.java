@@ -63,7 +63,27 @@ public class Constants {
      */
     public static final String CONFIG_MAX_SECOND_INTERVAL = "second.interval.max";
 
-    private Constants() {
+    /**
+     * 配置文件-订单来源
+     */
+    public static final String CONFIG_ORDER_SOURCE = "order.source";
+
+    public static final String ORDER_TABLE_NAME = "CRM_WS_ORDER"; // 订单表名
+    public static final String COLUMN_ORDER_NO = "ORDER_NO"; // VARCHAR,W20170526100254872730462
+    public static final String COLUMN_ORDER_STATUS = "ORDER_STATUS"; // VARCHAR,7
+    public static final String COLUMN_PAY_TYPE = "PAY_TYPE"; // VARCHAR,1
+    public static final String COLUMN_ORDER_SOURCE = "ORDER_SOURCE"; // sz0528
+    public static final String COLUMN_ORDER_DATE = "ORDER_DATE"; // DATETIME
+    public static final String COLUMN_ARRIVAL_DATE = "ARRIVAL_DATE"; // DATETIME
+    public static final String COLUMN_END_DATE = "END_DATE"; // DATETIME
+    public static final String COLUMN_CREATED = "CREATED"; // DATETIME
+    public static final String COLUMN_UPDATED = "UPDATED"; // DATETIME
+
+    public static final String ORDER_NO_PREFIX = "W"; // 订单号前缀
+    public static final String ORDER_STATUS_CLOSED = "7"; // 订单状态：闭环
+    public static final String ORDER_PAY_TYPE = "1"; // 支付方式：现金
+
+    public Constants() {
         super();
     }
 

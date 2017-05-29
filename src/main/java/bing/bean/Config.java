@@ -12,6 +12,7 @@ public class Config {
     private int minHour;
     private int maxHour;
     private int maxSecondInterval;
+    private String orderSource; // 订单来源
 
     public Config() {
         super();
@@ -55,6 +56,14 @@ public class Config {
 
     public void setMaxSecondInterval(int maxSecondInterval) {
         this.maxSecondInterval = maxSecondInterval;
+    }
+
+    public String getOrderSource() {
+        return orderSource;
+    }
+
+    public void setOrderSource(String orderSource) {
+        this.orderSource = orderSource;
     }
 
 }

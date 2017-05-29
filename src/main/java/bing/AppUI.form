@@ -140,7 +140,6 @@
         </Component>
         <Component class="javax.swing.JTextField" name="orderPathTextField">
           <Properties>
-            <Property name="editable" type="boolean" value="false"/>
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
               <Font name="&#x5fae;&#x8f6f;&#x96c5;&#x9ed1;" size="14" style="0"/>
             </Property>
@@ -151,7 +150,6 @@
         </Component>
         <Component class="javax.swing.JTextField" name="sqlPathTextField">
           <Properties>
-            <Property name="editable" type="boolean" value="false"/>
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
               <Font name="&#x5fae;&#x8f6f;&#x96c5;&#x9ed1;" size="14" style="0"/>
             </Property>

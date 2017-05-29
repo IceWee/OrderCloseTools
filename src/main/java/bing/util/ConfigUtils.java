@@ -50,6 +50,8 @@ public class ConfigUtils {
                     config.setMaxHour(Integer.parseInt(value));
                 } else if (StringUtils.startsWith(line, Constants.CONFIG_MAX_SECOND_INTERVAL)) {
                     config.setMaxSecondInterval(Integer.parseInt(value));
+                } else if (StringUtils.startsWith(line, Constants.CONFIG_ORDER_SOURCE)) {
+                    config.setOrderSource(value);
                 }
             }
         } catch (IOException e) {

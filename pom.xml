@@ -115,6 +115,7 @@
                         <exclude>**/*.ico</exclude>
                         <exclude>**/*.txt</exclude>
                         <exclude>**/*.bat</exclude>
+                        <exclude>**/*.sh</exclude>
                     </excludes>
                 </configuration>
             </plugin>

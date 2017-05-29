@@ -12,6 +12,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import org.apache.commons.lang3.StringUtils;
 import org.jvnet.substance.skin.SubstanceOfficeBlue2007LookAndFeel;
 import org.slf4j.Logger;
@@ -105,7 +106,6 @@ public class AppUI extends JFrame {
         jLabel1.setFont(new java.awt.Font("微软雅黑", 1, 15)); // NOI18N
         jLabel1.setText("SQL文件目录：");
 
-        orderPathTextField.setEditable(false);
         orderPathTextField.setFont(new java.awt.Font("微软雅黑", 0, 14)); // NOI18N
         orderPathTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -113,7 +113,6 @@ public class AppUI extends JFrame {
             }
         });
 
-        sqlPathTextField.setEditable(false);
         sqlPathTextField.setFont(new java.awt.Font("微软雅黑", 0, 14)); // NOI18N
 
         choseOrderPathButton.setFont(new java.awt.Font("微软雅黑", 0, 14)); // NOI18N
@@ -224,7 +223,7 @@ public class AppUI extends JFrame {
      */
     private void choseOrderPathButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_choseOrderPathButtonActionPerformed
         JFileChooser chooser = new JFileChooser(orderPathTextField.getText());
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.showOpenDialog(this);
         File orderPath = chooser.getSelectedFile();
         if (orderPath != null) {
@@ -268,7 +267,7 @@ public class AppUI extends JFrame {
     private boolean valid() {
         String orderPath = this.orderPathTextField.getText();
         if (StringUtils.isBlank(orderPath)) {
-            JOptionPane.showMessageDialog(this, "请选择订单文件目录！", "提示信息", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "请选择订单文件路径或目录！", "提示信息", JOptionPane.WARNING_MESSAGE);
             return false;
         }
         String sqlPath = this.sqlPathTextField.getText();
@@ -305,7 +304,7 @@ public class AppUI extends JFrame {
      * 执行完成
      */
     public void completed() {
-        LOGGER.info("生成完毕.....");
+        LOGGER.info("订单闭环更新SQL生成完毕.....");
         buttonsEnabled();
         try {
             String sqlPath = this.sqlPathTextField.getText();
@@ -338,7 +337,7 @@ public class AppUI extends JFrame {
     static void setlookAndFeel() {
         try {
             UIManager.setLookAndFeel(new SubstanceOfficeBlue2007LookAndFeel());
-        } catch (Exception e) {
+        } catch (UnsupportedLookAndFeelException e) {
         }
     }
 
